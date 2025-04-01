@@ -1,86 +1,70 @@
-# CLINoteapp
+# Notable CLI Application
 
-This project demonstrates the use of Hibernate ORM with Java to manage many-to-many relationships between `Employee` and `Project` entities.
+## Overview
+Notable CLI is a command-line interface application for managing notes. Users can register, log in, create, view, update, and delete notes. The application uses Hibernate for ORM and PostgreSQL as the database.
+
+## Features
+- User Registration
+- User Login
+- Create Note
+- View Notes
+- Update Note
+- Delete Note
 
 ## Prerequisites
-
-- Java 22
+- Java 24
 - Maven
 - PostgreSQL
 
 ## Setup
 
-1. Clone the repository:
-    ```sh
-    git clone https://github.com/your-username/LearnHibernate.git
-    cd LearnHibernate
-    ```
+1. **Clone the repository:**
+   ```sh
+   git clone https://github.com/Arkadipta-Kundu/CLINoteapp.git
+   cd notable-cli
+   ```
 
-2. Configure the PostgreSQL database in `hibernate.cfg.xml`:
-    ```xml
-    <property name="hibernate.connection.url">jdbc:postgresql://localhost:5432/Demo</property>
-    <property name="hibernate.connection.username">your-username</property>
-    <property name="hibernate.connection.password">your-password</property>
-    ```
+2. **Configure the database:**
+   Update the `hibernate.cfg.xml` file with your PostgreSQL database credentials.
+   ```xml
+   <property name="hibernate.connection.url">jdbc:postgresql://localhost:5432/postgres</property>
+   <property name="hibernate.connection.username">postgres</property>
+   <property name="hibernate.connection.password">0000</property>
+   ```
 
-3. Build the project using Maven:
-    ```sh
-    mvn clean install
-    ```
+3. **Build the project:**
+   ```sh
+   mvn clean install
+   ```
 
-## Running the Application
+4. **Run the application:**
+   ```sh
+   mvn exec:java -Dexec.mainClass="org.arkadipta.Main"
+   ```
 
-To run the application, execute the `Main` class:
-```sh
-mvn exec:java -Dexec.mainClass="org.example.relationships.many2many.Main"
-```
+## Usage
 
-## Project Structure
+1. **Register:**
+   - Enter your name, username, and password to register.
 
-- `src/main/java/org/example/relationships/many2many/Employee.java`: Defines the `Employee` entity.
-- `src/main/java/org/example/relationships/many2many/Project.java`: Defines the `Project` entity.
-- `src/main/java/org/example/relationships/many2many/Main.java`: Contains the main method to run the application.
+2. **Login:**
+   - Enter your username and password to log in.
 
-## Entities
+3. **Create Note:**
+   - Enter the title and content of the note.
 
-### Employee
+4. **View Notes:**
+   - View all notes associated with the logged-in user.
 
-```java
-@Entity
-public class Employee {
-    @Id
-    private int id;
-    private String name;
+5. **Update Note:**
+   - Enter the note ID, new title, and new content to update a note.
 
-    @ManyToMany
-    @JoinTable(
-        name = "employee_project",
-        joinColumns = @JoinColumn(name = "employee_id"),
-        inverseJoinColumns = @JoinColumn(name = "project_id")
-    )
-    private List<Project> projects;
+6. **Delete Note:**
+   - Enter the note ID to delete a note.
 
-    // Getters and setters
-}
-```
-
-### Project
-
-```java
-@Entity
-public class Project {
-    @Id
-    private int id;
-    private String name;
-
-    @ManyToMany(mappedBy = "projects")
-    private List<Employee> employees;
-
-    // Getters and setters
-}
-```
+## Dependencies
+- Hibernate Core 6.6.8.Final
+- PostgreSQL JDBC 42.7.5
 
 ## License
-
 This project is licensed under the MIT License.
-```
