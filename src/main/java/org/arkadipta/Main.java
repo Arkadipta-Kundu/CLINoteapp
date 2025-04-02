@@ -10,16 +10,18 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-    public static void startApp(){
 
+    // Entry point for the application
+    public static void startApp() {
+        // Configure Hibernate and build session factory
         Configuration cfg = new Configuration().configure().addAnnotatedClass(Note.class).addAnnotatedClass(Users.class);
         SessionFactory sf = cfg.buildSessionFactory();
         Session session = sf.openSession();
 
         Scanner scanner = new Scanner(System.in);
-
         boolean isRunning = true;
 
+        // Main menu loop
         while (isRunning) {
             System.out.println("\nWelcome to Notable CLI !");
             System.out.println("1. Register");
@@ -28,35 +30,35 @@ public class Main {
             System.out.print("Enter your choice: ");
 
             int choice = scanner.nextInt();
-
-            scanner.nextLine();
+            scanner.nextLine(); // Consume newline
 
             switch (choice) {
                 case 1:
-                    register(session);
+                    register(session); // Handle user registration
                     break;
                 case 2:
-                    login(session);
+                    login(session); // Handle user login
                     break;
-                case 3: {
-                    isRunning = false;
+                case 3:
+                    isRunning = false; // Exit the application
                     System.out.println("Exiting... Thank you for using CLI Notepad!");
                     break;
-                }
                 default:
                     System.out.println("Invalid choice!");
             }
         }
+
+        // Close session and session factory
         session.close();
         sf.close();
-
     }
+
+    // Grant access to logged-in users
     public static void grantAccess(Session session, String loggedInUserName) {
-
         Scanner scanner = new Scanner(System.in);
-
         boolean isRunning = true;
 
+        // User menu loop
         while (isRunning) {
             System.out.println("1. Create Note");
             System.out.println("2. View Notes");
@@ -64,29 +66,26 @@ public class Main {
             System.out.print("Enter your choice: ");
 
             int choice = scanner.nextInt();
-
-            scanner.nextLine(); // Consume the newline character left by nextInt()
+            scanner.nextLine(); // Consume newline
 
             switch (choice) {
                 case 1:
-                    createNote(session, loggedInUserName);
+                    createNote(session, loggedInUserName); // Create a new note
                     break;
                 case 2:
-                    viewNotes(session, loggedInUserName);
+                    viewNotes(session, loggedInUserName); // View existing notes
                     break;
-                case 3: {
-                    isRunning = false;
-//                    System.out.println("Exiting... Thank you for using CLI Notepad!");
+                case 3:
+                    isRunning = false; // Exit to main menu
                     break;
-                }
                 default:
                     System.out.println("Invalid choice! Please enter a number between 1-3.");
             }
         }
     }
 
-    public static void register(Session session)
-    {
+    // Register a new user
+    public static void register(Session session) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter your name: ");
         String name = scanner.nextLine();
@@ -95,16 +94,19 @@ public class Main {
         System.out.println("Enter your password: ");
         String password = scanner.nextLine();
 
+        // Create a new user object
         Users user_data = new Users();
         user_data.setUsername(username);
         user_data.setPassword(password);
         user_data.setName(name);
 
+        // Save user to the database
         Transaction tx = session.beginTransaction();
         session.persist(user_data);
         tx.commit();
     }
 
+    // Handle user login
     public static void login(Session session) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter your username: ");
@@ -112,40 +114,46 @@ public class Main {
         System.out.println("Enter your password: ");
         String password = scanner.nextLine();
 
-        Users user = session.get(Users.class,username);
+        // Fetch user from the database
+        Users user = session.get(Users.class, username);
 
+        // Validate credentials
         if (user != null && user.getPassword().equals(password)) {
-            grantAccess(session,username);
+            grantAccess(session, username); // Grant access if valid
         } else {
             System.out.println("Invalid username or password! Please try again.");
         }
-
     }
 
-    public static void createNote(Session session,String loggedInUserName) {
+    // Create a new note
+    public static void createNote(Session session, String loggedInUserName) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter note title: ");
         String title = scanner.nextLine();
         System.out.println("Enter note content: ");
         String content = scanner.nextLine();
 
+        // Create a new note object
         Note note = new Note();
         note.setTitle(title);
         note.setContent(content);
         note.setAuthor(loggedInUserName);
-        System.out.println(loggedInUserName);
 
+        // Save note to the database
         Transaction tx = session.beginTransaction();
         session.persist(note);
         tx.commit();
     }
 
+    // View notes for the logged-in user
     public static void viewNotes(Session session, String loggedInUserName) {
+        // Fetch notes from the database using HQL
         String hql = "FROM Note n WHERE n.author = :username";
         Query<Note> query = session.createQuery(hql, Note.class);
         query.setParameter("username", loggedInUserName);
         List<Note> notes = query.list();
 
+        // Display notes
         if (notes.isEmpty()) {
             System.out.println("No notes found.");
         } else {
@@ -160,6 +168,7 @@ public class Main {
 
         Scanner scanner = new Scanner(System.in);
 
+        // Options for managing notes
         while (true) {
             System.out.println("\n1. Update Note");
             System.out.println("2. Delete Note");
@@ -170,22 +179,21 @@ public class Main {
 
             switch (choice) {
                 case 1:
-                    updateNote(session);
+                    updateNote(session); // Update a note
                     break;
                 case 2:
-                    deleteNote(session);
+                    deleteNote(session); // Delete a note
                     break;
                 case 3:
                     System.out.println("Returning to main menu...");
-                    return;  // Exits the method and goes back to the main menu
+                    return; // Exit to the main menu
                 default:
                     System.out.println("Invalid choice! Please enter a number between 1-3.");
             }
         }
     }
 
-
-
+    // Update an existing note
     public static void updateNote(Session session) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter the note ID you want to update: ");
@@ -197,7 +205,7 @@ public class Main {
         System.out.println("Enter new content: ");
         String content = scanner.nextLine();
 
-        // HQL Update Query
+        // Update note using HQL
         String hql = "UPDATE Note n SET n.title = :title, n.content = :content WHERE n.id = :noteId";
         Transaction tx = session.beginTransaction();
         Query query = session.createQuery(hql);
@@ -208,6 +216,7 @@ public class Main {
         int rowsAffected = query.executeUpdate();
         tx.commit();
 
+        // Display result
         if (rowsAffected > 0) {
             System.out.println("Note updated successfully!");
         } else {
@@ -215,7 +224,7 @@ public class Main {
         }
     }
 
-
+    // Delete an existing note
     public static void deleteNote(Session session) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter the note ID you want to delete: ");
@@ -228,16 +237,16 @@ public class Main {
         Note note = session.get(Note.class, noteId);
 
         if (note != null) {
-                session.remove(note);
-                tx.commit();
-                System.out.println("Note deleted successfully!");
+            session.remove(note); // Delete the note
+            tx.commit();
+            System.out.println("Note deleted successfully!");
         } else {
             System.out.println("Error: No note found with the given ID.");
             tx.rollback();
         }
     }
 
-
+    // Main method to start the application
     public static void main(String[] args) {
         startApp();
     }
